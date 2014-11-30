@@ -1,6 +1,6 @@
 name:                frisby
 version:             0.2
-cabal-version:       >=1.1.6
+cabal-version:       >=1.2
 license:             BSD3
 copyright:           John Meacham (2006)
 author:              John Meacham <john@repetae.net>
@@ -24,10 +24,12 @@ description:         frisby is a parser library that can parse arbitrary PEG
                      routines to translate standard regex syntax into frisby parsers.
 category:            Text
 tested-with:         GHC==6.12.1
-exposed-modules:     Text.Parsers.Frisby, Text.Parsers.Frisby.Char
-build-type:          Simple
-build-depends:       base>=4 && <5, containers, mtl, array
 license-file:        LICENSE
+build-type:          Simple
+
+library
+  exposed-modules:     Text.Parsers.Frisby, Text.Parsers.Frisby.Char
+  build-depends:       base>=4 && <5, containers, mtl, array
 
 source-repository head
   type:     git
