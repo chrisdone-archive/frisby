@@ -7,6 +7,7 @@ author:              John Meacham <john@repetae.net>
 maintainer:          John Meacham <john@repetae.net>, Chris Done <chrisdone@gmail.com>
 stability:           experimental
 homepage:            http://repetae.net/computer/frisby/
+homepage:            http://repetae.net/computer/frisby/
 package-url:         http://repetae.net/repos/frisby
 synopsis:            Linear time composable parser for PEG grammars
 description:         frisby is a parser library that can parse arbitrary PEG
@@ -27,3 +28,7 @@ exposed-modules:     Text.Parsers.Frisby, Text.Parsers.Frisby.Char
 build-type:          Simple
 build-depends:       base>=4 && <5, containers, mtl, array
 license-file:        LICENSE
+
+source-repository head
+  type:     git
+  location: https://github.com/chrisdone/frisby
