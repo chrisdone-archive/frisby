@@ -176,6 +176,7 @@ module Text.Parsers.Frisby(
 
 import Control.Applicative
    hiding(many,optional) --though same meaning 'many', and superior 'optional'
+import qualified Control.Applicative (many)
 import qualified Data.IntSet as IntSet
 import Control.Monad.Fix
 import Control.Monad.Identity
@@ -289,9 +290,12 @@ instance Applicative PE where
 --the function (++), (,) ... but, 'text', etc, does this too
     mf <*> ma = PMap (\(f,a) -> f a) (Then mf ma)
     pure = Unit
+
 instance Alternative PE where
     (<|>) = Slash
     empty = Failure
+    some p = uncurry (:) <$> Then p (Star p)
+    many  = Star
 
 instance Monoid (PE a) where
     mappend = Slash
