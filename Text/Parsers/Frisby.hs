@@ -183,6 +183,8 @@ import Control.Monad.Identity
 import Data.Char(ord,chr)
 import Control.Monad.State
 import Data.Array hiding((//))
+import Data.Semigroup (Semigroup)
+import qualified Data.Semigroup as Semigroup
 import Data.Monoid hiding(Any,(<>))
 import qualified Data.Map as Map
 
@@ -257,7 +259,7 @@ type PMImp a = State Token a
 
 -- 's' added for safe state, just as the ST monad's interface uses
 newtype P s a = P { fromP :: PE a }
-    deriving(Functor,Applicative,Alternative,Monoid)
+    deriving(Functor,Applicative,Alternative,Semigroup,Monoid)
 
 data PE a where
     Char :: IntSet.IntSet -> PE Char
@@ -296,6 +298,9 @@ instance Alternative PE where
     empty = Failure
     some p = uncurry (:) <$> Then p (Star p)
     many  = Star
+
+instance Semigroup (PE a) where
+    (<>) = Slash
 
 instance Monoid (PE a) where
     mappend = Slash
