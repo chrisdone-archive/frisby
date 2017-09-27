@@ -4,7 +4,7 @@ cabal-version:       >=1.6
 license:             BSD3
 copyright:           John Meacham (2006)
 author:              John Meacham <john@repetae.net>
-maintainer:          John Meacham <john@repetae.net>, Chris Done <chrisdone@gmail.com>
+maintainer:          Ben Gamari <ben@smart-cactus.org>
 stability:           experimental
 homepage:            http://repetae.net/computer/frisby/
 homepage:            http://repetae.net/computer/frisby/
@@ -33,4 +33,4 @@ library
 
 source-repository head
   type:     git
-  location: https://github.com/chrisdone/frisby
+  location: https://github.com/bgamari/frisby
