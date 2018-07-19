@@ -187,6 +187,7 @@ import Data.Semigroup (Semigroup)
 import qualified Data.Semigroup as Semigroup
 import Data.Monoid hiding(Any,(<>))
 import qualified Data.Map as Map
+import Prelude hiding((<>))
 
 --inline usable part of Unsafe.Coerce until that module is commonly available
 import GHC.Base (unsafeCoerce#)
