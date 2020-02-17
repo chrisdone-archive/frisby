@@ -179,6 +179,7 @@ import Control.Applicative
 import qualified Control.Applicative (many)
 import qualified Data.IntSet as IntSet
 import Control.Monad.Fix
+import Control.Monad.Fail
 import Control.Monad.Identity
 import Data.Char(ord,chr)
 import Control.Monad.State
@@ -807,7 +808,7 @@ parse_regex = runPeg parseRegex
 -- | Create a new regular expression matching parser. it returns something in a
 -- possibly failing monad to indicate an error in the regular expression itself.
 
-newRegex :: Monad m => String -> m (PM s (P s String))
+newRegex :: MonadFail m => String -> m (PM s (P s String))
 newRegex s = case parse_regex s of
     Just r -> return (return $ regexToParser r)
     Nothing -> err
@@ -822,4 +823,8 @@ showRegex s = do
 
 -- | Make a new regex but abort on an error in the regex string itself.
 regex :: String -> PM s (P s String)
-regex s = runIdentity (newRegex s)
+regex s =
+  case parse_regex s of
+    Just r -> return $ regexToParser r
+    Nothing -> err
+   where err = error $ "invalid regular expression: " ++ show s
