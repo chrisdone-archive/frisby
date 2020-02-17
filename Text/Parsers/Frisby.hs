@@ -188,6 +188,7 @@ import Data.Semigroup (Semigroup)
 import qualified Data.Semigroup as Semigroup
 import Data.Monoid hiding(Any,(<>))
 import qualified Data.Map as Map
+import qualified Control.Monad.Fail as Fail
 import Prelude hiding((<>))
 
 --inline usable part of Unsafe.Coerce until that module is commonly available
@@ -808,11 +809,11 @@ parse_regex = runPeg parseRegex
 -- | Create a new regular expression matching parser. it returns something in a
 -- possibly failing monad to indicate an error in the regular expression itself.
 
-newRegex :: MonadFail m => String -> m (PM s (P s String))
+newRegex :: Fail.MonadFail m => String -> m (PM s (P s String))
 newRegex s = case parse_regex s of
     Just r -> return (return $ regexToParser r)
     Nothing -> err
-   where err = fail $ "invalid regular expression: " ++ show s
+   where err = Fail.fail $ "invalid regular expression: " ++ show s
 
 
 -- | Show a representation of the parsed regex, mainly for debugging.
