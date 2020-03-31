@@ -189,12 +189,8 @@ import qualified Data.Semigroup as Semigroup
 import Data.Monoid hiding(Any,(<>))
 import qualified Data.Map as Map
 import qualified Control.Monad.Fail as Fail
+import Unsafe.Coerce (unsafeCoerce)
 import Prelude hiding((<>))
-
---inline usable part of Unsafe.Coerce until that module is commonly available
-import GHC.Base (unsafeCoerce#)
-unsafeCoerce :: a -> b
-unsafeCoerce = unsafeCoerce#
 
 -- Essentially we are manipulating a polytypic cyclic graph (the P structure).
 -- This is difficult to do in Haskell.
