@@ -247,11 +247,7 @@ newtype Token = Token Int
 
 -- the monad used for creating recursive values
 newtype PM s a = PM (PMImp a)
-    deriving(Monad,MonadFix,Functor)
-
-instance Applicative (PM s) where
-  (<*>) = ap
-  pure = return
+    deriving(Monad,Applicative,MonadFix,Functor)
 
 type PMImp a = State Token a
 
@@ -302,7 +298,7 @@ instance Semigroup (PE a) where
     (<>) = Slash
 
 instance Monoid (PE a) where
-    mappend = Slash
+    mappend = (Semigroup.<>)
     mempty = Failure
 
 
@@ -513,7 +509,7 @@ normalizePElemNM pe = f pe where
     f p@GetPos = return p
     f Rest = return Rest
     f (When p fn) = f p >>= \p' -> return (When p' fn)
-    f (PMap fn x) = liftM (PMap fn) (f x)
+    f (PMap fn x) = PMap fn `fmap` f x
     f (Star p) = f p >>= \x -> case x of
         Failure -> return $ Unit []
 --        Unit x -> return $ repeat x
