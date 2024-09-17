@@ -176,19 +176,21 @@ module Text.Parsers.Frisby(
 
 import Control.Applicative
    hiding(many,optional) --though same meaning 'many', and superior 'optional'
+import qualified Control.Applicative (many)
 import qualified Data.IntSet as IntSet
 import Control.Monad.Fix
+import Control.Monad.Fail
 import Control.Monad.Identity
 import Data.Char(ord,chr)
 import Control.Monad.State
 import Data.Array hiding((//))
+import Data.Semigroup (Semigroup)
+import qualified Data.Semigroup as Semigroup
 import Data.Monoid hiding(Any,(<>))
 import qualified Data.Map as Map
-
---inline usable part of Unsafe.Coerce until that module is commonly available
-import GHC.Base (unsafeCoerce#)
-unsafeCoerce :: a -> b
-unsafeCoerce = unsafeCoerce#
+import qualified Control.Monad.Fail as Fail
+import Unsafe.Coerce (unsafeCoerce)
+import Prelude hiding((<>))
 
 -- Essentially we are manipulating a polytypic cyclic graph (the P structure).
 -- This is difficult to do in Haskell.
@@ -245,18 +247,14 @@ newtype Token = Token Int
 
 -- the monad used for creating recursive values
 newtype PM s a = PM (PMImp a)
-    deriving(Monad,MonadFix,Functor)
-
-instance Applicative (PM s) where
-  (<*>) = ap
-  pure = return
+    deriving(Monad,Applicative,MonadFix,Functor)
 
 type PMImp a = State Token a
 
 
 -- 's' added for safe state, just as the ST monad's interface uses
 newtype P s a = P { fromP :: PE a }
-    deriving(Functor,Applicative,Alternative,Monoid)
+    deriving(Functor,Applicative,Alternative,Semigroup,Monoid)
 
 data PE a where
     Char :: IntSet.IntSet -> PE Char
@@ -289,12 +287,18 @@ instance Applicative PE where
 --the function (++), (,) ... but, 'text', etc, does this too
     mf <*> ma = PMap (\(f,a) -> f a) (Then mf ma)
     pure = Unit
+
 instance Alternative PE where
     (<|>) = Slash
     empty = Failure
+    some p = uncurry (:) <$> Then p (Star p)
+    many  = Star
+
+instance Semigroup (PE a) where
+    (<>) = Slash
 
 instance Monoid (PE a) where
-    mappend = Slash
+    mappend = (Semigroup.<>)
     mempty = Failure
 
 
@@ -505,7 +509,7 @@ normalizePElemNM pe = f pe where
     f p@GetPos = return p
     f Rest = return Rest
     f (When p fn) = f p >>= \p' -> return (When p' fn)
-    f (PMap fn x) = liftM (PMap fn) (f x)
+    f (PMap fn x) = PMap fn `fmap` f x
     f (Star p) = f p >>= \x -> case x of
         Failure -> return $ Unit []
 --        Unit x -> return $ repeat x
@@ -797,11 +801,11 @@ parse_regex = runPeg parseRegex
 -- | Create a new regular expression matching parser. it returns something in a
 -- possibly failing monad to indicate an error in the regular expression itself.
 
-newRegex :: Monad m => String -> m (PM s (P s String))
+newRegex :: Fail.MonadFail m => String -> m (PM s (P s String))
 newRegex s = case parse_regex s of
     Just r -> return (return $ regexToParser r)
     Nothing -> err
-   where err = fail $ "invalid regular expression: " ++ show s
+   where err = Fail.fail $ "invalid regular expression: " ++ show s
 
 
 -- | Show a representation of the parsed regex, mainly for debugging.
@@ -812,4 +816,8 @@ showRegex s = do
 
 -- | Make a new regex but abort on an error in the regex string itself.
 regex :: String -> PM s (P s String)
-regex s = runIdentity (newRegex s)
+regex s =
+  case parse_regex s of
+    Just r -> return $ regexToParser r
+    Nothing -> err
+   where err = error $ "invalid regular expression: " ++ show s
